@@ -1,0 +1,33 @@
+/////////////////////////////////////////////////////////////////
+//
+// Input Key Items
+// 
+// Keys we'd like to register for projects.
+// 
+// Seperating this from the input file will make 
+// the input module fairly portable.
+// 
+// For a different system who needs detecting different keys,
+// all we need is a different key items file.
+//
+//  
+/////////////////////////////////////////////////////////////////
+
+
+#ifndef INPUT_KEY_ITEM
+#define INPUT_KEY_ITEM( k, wkey, n )
+#endif
+
+
+// enum, win key, name
+// keyboard
+INPUT_KEY_ITEM( ESC         , VK_ESCAPE,  "Esc"           )
+
+
+// mosuse
+INPUT_KEY_ITEM( MOUSE_LEFT  , MK_LBUTTON, "Mouse Left"    )
+INPUT_KEY_ITEM( MOUSE_RIGHT , MK_RBUTTON, "Mouse Right"   )
+INPUT_KEY_ITEM( MOUSE_MIDDLE, MK_MBUTTON, "Mouse Middle"  )
+
+
+#undef INPUT_KEY_ITEM
