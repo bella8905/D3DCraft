@@ -36,6 +36,47 @@ static struct SGraphicSettings {
 
 } Graphics_GlobalSettings;
 
+void CGraphics::SCENE::Init() {
+    // init objects
+    CObject box( GEO_BOX );
+    glm::mat4 rot_x30 = glm::rotate( glm::mat4(), 30 * g_o2Pi, glm::vec3( 1, 0, 0 ) );
+    box.SetRot( rot_x30 );
+    _objects.push_back( box );
+
+
+    // view matrix
+    glm::vec3 camPos( 0.f, 0.f, -2.0f );
+    glm::vec3 camTarget( 0.f, 0.f, 0.f );
+    float dist = glm::distance( camPos, camTarget );
+    _pFreeflyCam = new CFreeFlyCamera( ToPositon( camPos ), ToPositon( camTarget ), glm::vec4( 0.f, 1.f, 0.f, 0.f ) );
+
+    CView view;
+    _pFreeflyCam->SetToView( &view );
+    // view.SetCameraPostionFaceAndUp( ToPositon( camPos ), ToDirection( camFace ) );
+    view.SetHorizontalFieldOfView( DegToRad( 80.f ) );
+    View_SetAsActive( &view );
+}
+
+void CGraphics::SCENE::Deinit() {
+    if( _pFreeflyCam ) {
+        delete _pFreeflyCam;
+        _pFreeflyCam = nullptr;
+    }
+}
+
+void CGraphics::SCENE::Update() {
+    _pFreeflyCam->UpdateControl( 1.f / 60.f );
+    _pFreeflyCam->SetToView( View_GetActive() );
+
+}
+
+void CGraphics::SCENE::Draw() {
+    for( uint i = 0, numOfObj = _objects.size(); i < numOfObj; ++i ) {
+        Shaders_BindShader( &_objects[i] );
+        _objects[i].Draw();
+    }
+}
+
 
 bool CGraphics::GetIsFullScreen() {
     return Graphics_GlobalSettings._bFullScreen;
@@ -68,7 +109,7 @@ void CGraphics::SetScreenSize( int t_clientWidth, int t_clientHeight ) {
     Graphics_GlobalSettings._currentClientHeight = t_clientHeight;
 }
 
-CGraphics::CGraphics() : _d3d( nullptr ), _pFreeflyCam( nullptr ) {
+CGraphics::CGraphics() : _d3d( nullptr ) {
 
 }
 
@@ -106,16 +147,11 @@ void CGraphics::ShutDown() {
         _d3d = nullptr;
     }
 
-    if( _pFreeflyCam ) {
-        delete _pFreeflyCam;
-        _pFreeflyCam = nullptr;
-    }
+    _scene.Deinit();
 }
 
 bool CGraphics::Frame() {
-    _pFreeflyCam->UpdateControl( 1.f / 60.f );
-    _pFreeflyCam->SetToView( View_GetActive() );
-
+    _scene.Update();
     return _render();
 }
 
@@ -125,39 +161,14 @@ bool CGraphics::_render() {
 
     _d3d->BeginScene( 0.8f, 0.8f, 0.8f, 1.f );
 
-
-    for( uint i = 0, numOfObj = _objects.size(); i < numOfObj; ++i ) {
-        Shaders_BindShader( &_objects[i] );
-        _objects[i].Draw();
-    }
-
-
+    _scene.Draw();
 
     _d3d->EndScene();
     return true;
 }
 
 void CGraphics::_initScene() {
-
-    // init objects
-    CObject box( GEO_BOX );
-    glm::mat4 rot_x30 = glm::rotate( glm::mat4(), 30 * g_o2Pi, glm::vec3( 1, 0, 0 ) );
-    box.SetRot( rot_x30 );
-    _objects.push_back( box );
-
-
-
-    // view matrix
-    glm::vec3 camPos( 0.f, 0.f, -2.0f );
-    glm::vec3 camTarget( 0.f, 0.f, 0.f );
-    float dist = glm::distance( camPos, camTarget );
-    _pFreeflyCam = new CFreeFlyCamera( ToPositon( camPos ), ToPositon( camTarget ), glm::vec4( 0.f, 1.f, 0.f, 0.f ) );
-
-    CView view;
-    _pFreeflyCam->SetToView( &view );
-    // view.SetCameraPostionFaceAndUp( ToPositon( camPos ), ToDirection( camFace ) );
-    view.SetHorizontalFieldOfView( DegToRad( 80.f ) );
-    View_SetAsActive( &view );
+    _scene.Init();
 }
 
 void CGraphics::_initModules() {

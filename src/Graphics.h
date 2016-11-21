@@ -29,8 +29,21 @@ public:
 
 private:
     CD3D* _d3d;
-    std::vector<CObject> _objects;
-    CCamera* _pFreeflyCam;
+    struct SCENE {
+        std::vector<CObject> _objects;
+        CCamera* _pFreeflyCam;
+
+        SCENE() : _pFreeflyCam( nullptr ) {
+
+        }
+
+        void Init();
+        void Deinit();
+        void Update();
+        void Draw();
+
+    } _scene;
+
     
 
 private:
